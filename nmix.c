@@ -3,37 +3,39 @@
 
 #define LFSR_INITIAL 937
 #define For(a,b) for(i = a; i<=b; i++)
+#define ULL unsigned long long
+#define t 16
 
-int Nmix(int X, int R);
-int INmix(int Y, int R);
-int carry(int X, int R, int i);
-int lfsr_gen();
-void print_bits(uint16_t);
-int get(int num, int i);
+ULL Nmix(ULL X, ULL R);
+ULL INmix(ULL Y, ULL R);
+ULL carry(ULL X, ULL R, int i);
+ULL lfsr_gen();
+void print_bits(ULL);
+ULL get(ULL num, int i);
 
-uint16_t lfsr = LFSR_INITIAL;
+ULL lfsr = LFSR_INITIAL;
 
 int main() {
   while(1) {
     lfsr = LFSR_INITIAL; //Not required to initialise lfsr everytime in actuall code.
-    unsigned int X = 1;
-    unsigned int R = 1;
-    unsigned int Y = 1;
+    ULL X = 1;
+    ULL R = 1;
+    ULL Y = 1;
     printf("X : ");
-    scanf("%d", &X);
+    scanf("%llu", &X);
     R = lfsr_gen();
     Y = Nmix(X,R);
-    printf("Y : %d\n", Y);
+    printf("Y : %llu\n", Y);
     X = INmix(Y,R);
-    printf("X : %d\n", X);
+    printf("X : %llu\n", X);
   }
 }
 
-int Nmix(int X, int R) {
+ULL Nmix(ULL X, ULL R) {
   int x,r,c,y;
-  int Y = 0;
+  ULL Y = 0;
   int i;
-  For(0,16) {
+  For(0,t) {
     x = get(X, i);
     r = get(R, i);
     
@@ -46,7 +48,7 @@ int Nmix(int X, int R) {
 }
 
 
-int carry(int X, int R, int i) {
+ULL carry(ULL X, ULL R, int i) {
   int j;
   int c;
   
@@ -62,11 +64,11 @@ int carry(int X, int R, int i) {
   return c;
 }
 
-int INmix(int Y, int R) {
+ULL INmix(ULL Y, ULL R) {
   int x,r,d,y;
-  int X = 0;
+  ULL X = 0;
   int i;
-  For(0,16) {
+  For(0,t) {
     y = get(Y, i);
     r = get(R, i);
     d = carry(X, R, i-1);
@@ -78,23 +80,23 @@ int INmix(int Y, int R) {
   return X;
 }
 
-int get(int num, int i) {
+ULL get(ULL num, int i) {
   return num & (1 << i);
 }
 
 
-int lfsr_gen() {
-  unsigned bit;
+ULL lfsr_gen() {
+  ULL bit;
   bit = ((lfsr >> 1) ^ (lfsr >> 2) ^ (lfsr >> 4) ^ (lfsr >> 7));
-  lfsr = (lfsr >> 1) | (bit << 15);
+  lfsr = (lfsr >> 1) | (bit << t-1);
   return lfsr;
   //  print_bits(lfsr);
 }
 
-void print_bits(uint16_t n) {
-  printf("%d : ", n);
+void print_bits(ULL n) {
+  printf("%llu : ", n);
   int i;
-  for(i=15; i>=0; i--)
+  for(i=t-1; i>=0; i--)
     ((n & (1 << i)) != 0) ? printf("%d", 1) : printf("%d", 0);
   
   printf("\n");
