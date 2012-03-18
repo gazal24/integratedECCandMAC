@@ -61,9 +61,6 @@ ULL carry(ULL X, ULL R, int i) {
     c = c ^ ( get(X,j) & get(R,j) );
   }
 
-  /* if( i == -1) */
-  /*   printf("C : %d", c); */
-  
   return c;
 }
 
