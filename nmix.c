@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#define LFSR_INITIAL 937
+#define LFSR_INITIAL 98771212
 #define For(a,b) for(i = a; i<=b; i++)
 #define ULL unsigned long long
-#define t 16
+#define t 40
 
 ULL Nmix(ULL X, ULL R);
 ULL INmix(ULL Y, ULL R);
@@ -17,10 +17,11 @@ ULL lfsr = LFSR_INITIAL;
 
 int main() {
   while(1) {
-    lfsr = LFSR_INITIAL; //Not required to initialise lfsr everytime in actuall code.
+    lfsr = LFSR_INITIAL; //Not required to initialise lfsr everytime in actual code.
     ULL X = 1;
     ULL R = 1;
     ULL Y = 1;
+
     printf("X : ");
     scanf("%llu", &X);
     R = lfsr_gen();
@@ -32,7 +33,8 @@ int main() {
 }
 
 ULL Nmix(ULL X, ULL R) {
-  int x,r,c,y;
+  ULL y;
+  char x,r,c;
   ULL Y = 0;
   int i;
   For(0,t) {
@@ -40,17 +42,18 @@ ULL Nmix(ULL X, ULL R) {
     r = get(R, i);
     
     c = carry(X, R, i-1);
+    //printf("x %llu, r %llu ,c %llu\n", x,r,c);
     y = x ^ r ^ c;
-    //print_bits(y);
-    Y = Y | y;
+    Y = Y | (y<<i);
+    //print_bits(Y);
   }
+
   return Y;
 }
 
-
 ULL carry(ULL X, ULL R, int i) {
-  int j;
-  int c;
+  char j;
+  char c;
   
   c = (get(X,i-1) & get(X,i)) ^ (get(R,i-1) & get(R,i));
 
@@ -65,23 +68,30 @@ ULL carry(ULL X, ULL R, int i) {
 }
 
 ULL INmix(ULL Y, ULL R) {
-  int x,r,d,y;
+  ULL x;
+  char r,d,y;
   ULL X = 0;
   int i;
   For(0,t) {
     y = get(Y, i);
     r = get(R, i);
+    
     d = carry(X, R, i-1);
+    //printf("y %llu, r %llu ,d %llu\n", y,r,d);
     x = y ^ r ^ d;
     //print_bits(y);
-    X = X | x;
+    X = X | (x<<i);
   }
 
   return X;
 }
 
 ULL get(ULL num, int i) {
-  return num & (1 << i);
+  ULL one = 1;
+  if(i < 0) return 0;
+  if((num & (one << i)) == 0)
+    return 0;
+  else return 1;
 }
 
 
@@ -90,14 +100,14 @@ ULL lfsr_gen() {
   bit = ((lfsr >> 1) ^ (lfsr >> 2) ^ (lfsr >> 4) ^ (lfsr >> 7));
   lfsr = (lfsr >> 1) | (bit << t-1);
   return lfsr;
-  //  print_bits(lfsr);
 }
 
 void print_bits(ULL n) {
   printf("%llu : ", n);
   int i;
+  ULL one = 1;
   for(i=t-1; i>=0; i--)
-    ((n & (1 << i)) != 0) ? printf("%d", 1) : printf("%d", 0);
+    ((n & (one << i)) != 0) ? printf("%d", 1) : printf("%d", 0);
   
   printf("\n");
 }
