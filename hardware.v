@@ -36,76 +36,81 @@ module add_bits (X, R, Y, clk, reset, dirty);
    reg [5:0] 	 i;
    reg [5:0] 	 j;
    reg 		 dirty;
-
-   always @(posedge clk or posedge reset)
-     begin
-	$display("meh");
-	if(reset)
-	  begin
-	     i = 0;
-	     dirty = 1;
-	  end
-	else
-	  begin
-	     if(dirty)
-	       begin
-		  if(j==0) 
-		    // initialize
-		    begin
-		       Y[i] = (X[0]&R[0]) ^ (R[i] & R[i-1]) ^ (X[i] & X[i-1]);
-		       j = 1;
-		    end
-		  else
-		    begin
-		       if(j == i)
-			 begin
-			    i = i + 1;
-			    j = 0;
-			    if(i == 32)
-			      begin
-				 dirty = 0;
-			      end
-			 end
-		       else
-			 // main code
-			 begin
-			    $display("meh");
-			    Y[i] = Y[i] ^ X[j]&R[j];
-			    j = j+1;
-			 end
-		    end // else: !if(j==0)
-	       end // if (dirty)
-	  end // else: !if(reset)
-     end // always (posedge clk or posedge reset)
+   
+   always @(posedge clk) begin
+      //	$display("meh");
+      if(reset) begin
+	 i = 0;
+	 dirty = 1;
+      end
+      else begin
+	 if(dirty) begin
+	    if(j==0) begin //initialize
+	       Y[i] = (X[0]&R[0]) ^ (R[i] & R[i-1]) ^ (X[i] & X[i-1]);
+	       j = 1;
+	    end
+	    else begin
+	       if(j == i) begin // termination
+		  i = i + 1;
+		  j = 0;
+		  if(i == 32) begin
+		     dirty = 0;
+		  end
+	       end
+	       else begin // main code
+		  Y[i] = Y[i] ^ X[j]&R[j];
+		  j = j+1;
+	       end
+	    end // else: !if(j==0)
+	 end // if (dirty)
+      end // else: !if(reset)
+   end // always (posedge clk or posedge reset)
 endmodule // adder
 
-module dff_sync_reset (data, clk, reset, q);
-   input  data, clk, reset ; 
-   output q;
-   reg 	  q;
-   always @ ( posedge clk)
-     if (~reset) begin
-	q <= 1'b0;
-     end  else begin
-	q <= data;
+module DFF();
+   reg clk,reset,preset,d;
+   reg q;
+   
+   always @ (posedge clk)
+     if (reset) begin
+	q <= 0;
+     end else if (preset) begin
+	q <= 1;
+     end else begin
+	q <= d;
      end
-endmodule //End Of Module dff_sync_reset
+endmodule // DFF
 
 
 module add_bits_tb;
    reg  [31:0] X,R;
    wire [31:0] Y;
+   reg [4:0]   counter;
    reg 	       clk;
-   
-   initial clk = 0; 
-   always #1 clk = ~clk; 
-   
-   initial begin
-      $monitor("X=%b,\nR=%b,\nY=%b,",X,R,Y);
-      X = 1024 * 1024 + 2378923475;
-      R = 84765823;
-      $finish;
-   end
-   add_bits A1(.X(X), .R(R), .Y(Y), .clk(clk));
 
+   initial 
+     begin
+	X = 1024 * 1024 + 2378923475;
+	R = 84765823;
+	counter = 0;
+     end
+
+   add_bits A1(.X(X), .R(R), .Y(Y), .clk(clk));
+   
+   always 
+     begin
+	//$display("meh");
+	#1 clk = ~clk; 
+     end
+
+   always @(posedge clk)
+     begin
+	counter = counter + 1;
+	if(counter == 2)
+	  begin
+	     $display("meh");
+	     $monitor("X=%b,\nR=%b,\nY=%b,",X,R,Y);
+	  end
+     end
+   
 endmodule // add_tb
