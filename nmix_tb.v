@@ -3,7 +3,6 @@
 module nmix_tb;
    reg [31:0]  X,R;
    wire [31:0] Y;
-   wire [31:0] XY;
 
    reg 	       clk;
    reg 	       reset;
@@ -14,18 +13,18 @@ module nmix_tb;
       counter = 0;
       X = 1024 * 1024 + 2378923475;
       R = 84765823;
-      // RESET code should be last to be executed in INITIAL block
+
+      // Following RESET code should be last to be executed in this INITIAL block
       reset = 0;
       #1 reset = 1;
       #1 reset = 0;
    end
    
-   nmix uut(.X(X), .R(R), .Y(Y), .clk(clk), .reset(reset), .XY(XY));
+   nmix uut(.X(X), .R(R), .Y(Y), .clk(clk), .reset(reset));
    
    always begin
       #1 clk = ~clk; 
-      //		$monitor("X=%b,\nR=%b,\nY=%b,",X,R,XY);
+      // $monitor("X=%b,\nR=%b,\nY=%b,",X,R,XY);
    end
    
 endmodule // nmix_tb
-

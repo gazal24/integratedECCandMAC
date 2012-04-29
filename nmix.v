@@ -14,21 +14,26 @@ module nmix (X, R, Y, XY,clk, reset, dirty);
    reg 		 dirty;
 
    always @(posedge clk) begin
-
       if(reset) begin
 	 $display("im in reset");
-	 i <= 1;
+	 i <= 0;
 	 j <= 0;
 	 dirty <= 1;
       end else if(dirty == 1) begin
-	 if(j == 0) begin //initialize
-	    Y[i] = (X[0]&R[0]) ^ (R[i] & R[i]) ^ (X[i] & X[i]);
+	 if(i == 0) begin  // i == 0 treated seprately
+	    Y[i] = (X[i] ^ R[i]);
+	    i = 1;
+	 end else if(i==1) begin // i == 1 also treated seprately
+	    Y[i] = X[i] ^ R[i] ^ (X[0]&R[0])  ;
+	    i = 2;
+	 end else if(j == 0) begin //initialize
+	    Y[i] = X[i] ^ R[i] ^ (X[i-2]&X[i-1]) ^ (R[i-2]&R[i-1]) ^ (X[0]&R[0]);
 	    j <= 1;
 	    $display("hey i was in Initialization ALSO %b with i=%b", Y,i);
 	 end else if(j == i) begin // termination
 	    i = i+1;
 	    j <= 0;
-	    if(i == 31) begin
+	    if(i == 32) begin
 	       dirty = 0;
 	    end
 	 end else begin // main code
